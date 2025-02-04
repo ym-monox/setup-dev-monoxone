@@ -1,61 +1,89 @@
-﻿# SETUP-DEV-MONOXONE
+﻿# Setup Dev MONMO-X One
 
-このプロジェクトは、DockerとWSLを使用してMONO-X One(他プロジェクトに拡張可能)の開発環境をセットアップするためのものです。
-config.envをカスタマイズしてご利用ください。
+インターンで開発している"MONO-X One"（他プロジェクトに拡張可能）の開発環境を自動的にセットアップするためのスクリプトです。
+WSL2、Docker、Node.jsの開発環境を自動的にセットアップするためのスクリプトです。VSCodeでプロジェクトを開き、Docker環境を立ち上げ、開発サーバーを起動します。
 
-## 必要条件
+## 前提条件
 
-- Docker Desktop
-- WSL (Windows Subsystem for Linux)
-- Ubuntu (WSLディストリビューション)
+以下のソフトウェアがインストールされている必要があります：
+
+- Windows 10/11
+- WSL2
+- Ubuntu（WSL2）
+- Docker Desktop for Windows
+- Visual Studio Code（Cursorでも可）
+- Node.js（WSL内）
+
 
 ## セットアップ手順
 
-1. **環境変数の設定**
-   - `config.env`ファイルを作成し、以下の内容を含めます。`config.example.env`を参考にしてください。
-
-   ```env
-   WSL_DISTRO=Ubuntu
-   WSL_USER=your-username
-   PROJECT_PATH=/home/your-username/source/repos/apibridge
-   DOCKER_WEB_CONTAINER=web
-   USE_VSCODE=true
-   ```
-
-2. **開発環境の起動**
-   - `setup-dev-monoxone.bat`を実行します。このバッチファイルは、必要な環境変数を読み込み、Docker Desktopを起動し、WSLで開発環境をセットアップします。
-
+1. このリポジトリをクローンします：
    ```bash
-   @echo off
-   rem --- 環境変数を読み込む ---
-   setlocal
-   if exist config.env (
-       for /f "tokens=1,2 delims==" %%A in (config.env) do set %%A=%%B
-   ) else (
-       echo config.env が見つかりません。環境変数を設定してください。
-       pause
-       exit /b
-   )
-
-   rem --- Docker Desktop を起動 ---
-   start "" "C:\Program Files\Docker\Docker\Docker Desktop.exe"
-
-   rem --- WSLでUbuntuを起動し、環境変数を使って開発環境をセットアップ ---
-   wsl --distribution %WSL_DISTRO% --user %WSL_USER% bash -ic " \
-       cd %PROJECT_PATH% && \
-       if [ '%USE_VSCODE%' = 'true' ]; then code .; fi && \
-       docker-compose up -d && \
-       docker-compose exec %DOCKER_WEB_CONTAINER% bash -c 'npm run dev'"
-
-   echo Development environment is starting...
-   pause
+   git clone https://github.com/ym-monox/setup-dev-monoxone.git
+   cd setup-dev-monoxone
    ```
+
+
+2. 環境変数ファイルを設定します：
+   ```bash
+   cp .env.example .env
+   ```
+
+3. `.env`ファイルを編集し、以下の項目を自分の環境に合わせて設定します：
+   - `DOCKER_DESKTOP_PATH`: Docker Desktopの実行ファイルのパス
+   - `WSL_DISTRO`: 使用するWSLディストリビューション名（デフォルト: Ubuntu）
+   - `WSL_USER`: WSLで使用するユーザー名
+   - `PROJECT_PATH`: WSL内のプロジェクトパス
+   - `NPM_SCRIPT`: 実行するNPMスクリプト名（デフォルト: dev）
 
 ## 使用方法
 
-- 開発環境が起動したら、必要に応じてコードを編集し、Dockerコンテナ内でアプリケーションを実行できます。
+1. `setup-dev-monoxone.bat`をダブルクリックで実行します。
 
-## 注意事項
+2. スクリプトは以下の処理を順番に行います：
+   - 環境変数の読み込みと検証
+   - Docker Desktopの起動
+   - WSLの起動
+   - プロジェクトディレクトリでのVSCodeの起動
+   - Dockerコンテナの起動
+   - 開発サーバーの起動
 
-- 環境変数は、プロジェクトの要件に応じて適切に設定してください。
-- DockerとWSLのインストールが正しく行われていることを確認してください。
+3. ブラウザで開発サーバーにアクセスできます（通常は http://localhost:3000）
+
+## エラー対応
+
+### よくあるエラーと解決方法
+
+1. **Docker Desktopが見つからない場合**
+   - `.env`ファイル内の`DOCKER_DESKTOP_PATH`が正しく設定されているか確認してください。
+
+2. **WSLディストリビューションにアクセスできない場合**
+   - `WSL_DISTRO`の値が正しいか確認してください。
+   - WSLがインストールされ、指定したディストリビューションが利用可能か確認してください。
+
+3. **プロジェクトパスが見つからない場合**
+   - WSL内の正しいプロジェクトパスを`PROJECT_PATH`に設定しているか確認してください。
+
+## カスタマイズ
+
+スクリプトは`.env`ファイルを通じて簡単にカスタマイズできます。主な設定項目：
+
+```env
+DOCKER_DESKTOP_PATH=C:\Program Files\Docker\Docker\Docker Desktop.exe
+WSL_DISTRO=Ubuntu
+WSL_USER=your-username
+PROJECT_PATH=/home/your-username/project-path
+NPM_SCRIPT=dev
+```
+
+## 貢献について
+
+1. このリポジトリをフォーク
+2. 機能ブランチを作成 (`git checkout -b feature/amazing-feature`)
+3. 変更をコミット (`git commit -m 'Add some amazing feature'`)
+4. ブランチにプッシュ (`git push origin feature/amazing-feature`)
+5. Pull Requestを作成
+
+## ライセンス
+
+このプロジェクトは[MITライセンス](LICENSE)の下で公開されています。
