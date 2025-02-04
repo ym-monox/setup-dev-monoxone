@@ -1,95 +1,61 @@
-﻿# setup-dev-monoxone.bat 
+﻿# SETUP-DEV-MONOXONE
 
-## **概要**  
-このバッチファイル（`setup-dev-monoxone.bat`）は、Windows 上で開発環境を自動的にセットアップするためのスクリプトです。Docker Desktop の起動、WSL（Ubuntu）の起動、および開発に必要なコマンドの実行を一括で行います。
+このプロジェクトは、DockerとWSLを使用してMONO-X One(他プロジェクトに拡張可能)の開発環境をセットアップするためのものです。
+config.envをカスタマイズしてご利用ください。
 
----
+## 必要条件
 
-## **動作内容**  
-1. **Docker Desktop の起動**  
+- Docker Desktop
+- WSL (Windows Subsystem for Linux)
+- Ubuntu (WSLディストリビューション)
 
-   - `C:\Program Files\Docker\Docker\Docker Desktop.exe` を実行し、Docker Desktop を起動します。  
+## セットアップ手順
 
-2. **WSL（Ubuntu）の起動と初期化**  
-   - `wsl --distribution Ubuntu --user ym` により、指定したユーザー (`ym`) で WSL（Ubuntu）を起動します。  
-   - Ubuntu 内で、開発プロジェクトのディレクトリ `/home/ym/source/repos/apibridge` に移動します。  
+1. **環境変数の設定**
+   - `config.env`ファイルを作成し、以下の内容を含めます。`config.example.env`を参考にしてください。
 
-3. **VS Code の起動**  
-   - `code .` を実行し、VS Code をカレントディレクトリで開きます。  
+   ```env
+   WSL_DISTRO=Ubuntu
+   WSL_USER=your-username
+   PROJECT_PATH=/home/your-username/source/repos/apibridge
+   DOCKER_WEB_CONTAINER=web
+   USE_VSCODE=true
+   ```
 
-4. **Docker コンテナの起動**  
-   - `docker-compose up -d` を実行し、定義されたコンテナをバックグラウンドで起動します。  
+2. **開発環境の起動**
+   - `setup-dev-monoxone.bat`を実行します。このバッチファイルは、必要な環境変数を読み込み、Docker Desktopを起動し、WSLで開発環境をセットアップします。
 
-5. **開発環境の初期化**  
-   - `docker-compose exec web bash -c 'npm run dev'` を実行し、`web` コンテナ内で `npm run dev` を実行して開発環境を開始します。  
+   ```bash
+   @echo off
+   rem --- 環境変数を読み込む ---
+   setlocal
+   if exist config.env (
+       for /f "tokens=1,2 delims==" %%A in (config.env) do set %%A=%%B
+   ) else (
+       echo config.env が見つかりません。環境変数を設定してください。
+       pause
+       exit /b
+   )
 
-6. **完了メッセージの表示**  
-   - `Development environment is starting...` というメッセージを表示し、ユーザー入力待ち (`pause`) になります。  
+   rem --- Docker Desktop を起動 ---
+   start "" "C:\Program Files\Docker\Docker\Docker Desktop.exe"
 
----
+   rem --- WSLでUbuntuを起動し、環境変数を使って開発環境をセットアップ ---
+   wsl --distribution %WSL_DISTRO% --user %WSL_USER% bash -ic " \
+       cd %PROJECT_PATH% && \
+       if [ '%USE_VSCODE%' = 'true' ]; then code .; fi && \
+       docker-compose up -d && \
+       docker-compose exec %DOCKER_WEB_CONTAINER% bash -c 'npm run dev'"
 
-## **使用方法**  
-1. **バッチファイルを実行する**  
+   echo Development environment is starting...
+   pause
+   ```
 
-   - `setup-dev-monoxone.bat` をダブルクリックするか、コマンドプロンプトまたは PowerShell で以下のコマンドを実行します。  
-     ```sh
-     setup-dev-monoxone.bat
-     ```
+## 使用方法
 
-2. **開発環境のセットアップが完了するのを待つ**  
-   - スクリプトの指示に従い、処理が完了するのを待ちます。  
+- 開発環境が起動したら、必要に応じてコードを編集し、Dockerコンテナ内でアプリケーションを実行できます。
 
----
+## 注意事項
 
-## **前提条件**  
-このスクリプトを正しく実行するためには、以下のソフトウェアがインストールされている必要があります。  
-
-
-- **Windows 10/11（WSL2対応）**  
-- **WSL（Ubuntu）** がセットアップ済みであること  
-- **Docker Desktop**（Windows で WSL2 バックエンドを有効にする必要あり）  
-- **Visual Studio Code**（`code` コマンドが使用できること）  
-- **Docker Compose**（プロジェクトで `docker-compose.yml` が正しく設定されていること）  
-- **Node.js（npm）**（`web` コンテナ内で `npm run dev` を実行するため）  
-
----
-
-## **カスタマイズ方法**  
-- `ym` を他の WSL ユーザーに変更したい場合は、以下の部分を修正してください。  
-  ```sh
-
-  wsl --distribution Ubuntu --user <your-username>
-  ```
-- プロジェクトのディレクトリを変更する場合は、以下の部分を修正してください。  
-  ```sh
-  cd /home/ym/source/repos/apibridge
-  ```
-- 実行するコマンドを変更したい場合は、`docker-compose exec web bash -c 'npm run dev'` の部分を適宜変更してください。  
-
----
-
-## **トラブルシューティング**  
-- **スクリプトが正しく動作しない場合**  
-  1. **Docker Desktop が起動しているか確認**  
-
-     ```sh
-     docker info
-     ```
-  2. **WSL2 が正しく動作しているか確認**  
-     ```sh
-     wsl -l -v
-     ```
-  3. **`docker-compose.yml` の設定が正しいか確認**  
-  4. **スクリプトのパスが正しく設定されているか確認**  
-
-- **「code: command not found」というエラーが出る場合**  
-  - Visual Studio Code の WSL インストールが適切でない可能性があります。  
-    ```sh
-    code .
-    ```
-  - これが実行できない場合、VS Code を再インストールし、WSL に拡張機能を追加してください。
-
----
-
-## **ライセンス**
-このスクリプトは自由にカスタマイズ・再配布可能です。
+- 環境変数は、プロジェクトの要件に応じて適切に設定してください。
+- DockerとWSLのインストールが正しく行われていることを確認してください。
