@@ -1,8 +1,8 @@
-﻿# batchfile for Setup Dev "MONMO-X One"
+﻿# batchfile for Setup Dev "MONO-X One"
  
 ![setup-dev-monoxone](https://github.com/user-attachments/assets/af621842-6bab-48fc-b392-50b6647ec1a1)
 
-インターンで開発している"MONO-X One"（**他プロジェクトに拡張可能**）の開発環境を自動的にセットアップするためのスクリプトです。
+インターン(OJT-2025)で開発している"MONO-X One"（**他プロジェクトに拡張可能**）の開発環境を自動的にセットアップするためのスクリプトです。
 WSL2、Docker、Node.jsの開発環境を自動的にセットアップするためのスクリプトです。VSCodeでプロジェクトを開き、Docker環境を立ち上げ、開発サーバーを起動します。
 
 ## 前提条件
